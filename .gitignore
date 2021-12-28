@@ -1,0 +1,65 @@
+### custom ###
+
+# we want keep this file in ignore in order to avoid commit for it
+
+# we do not want them
+**/*.csv*
+**/*.CSV
+**/*.NO
+**/NO
+**/NO/**/*
+NO/**/*
+**/*.json
+**/*.dot
+**/*.graphml
+**/*.log
+**/*.pid*
+**/*filled*
+**/*__generated
+**/*.touch*
+
+**/*.csv.1
+**/*.csv.2
+**/*.csv.3
+**/*.zip
+
+# typical java
+bin/
+**/*.class
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+**/*.class
+**/*.jar
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### general
+#HELP.md
