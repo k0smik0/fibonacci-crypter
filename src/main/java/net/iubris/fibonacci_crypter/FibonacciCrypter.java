@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -23,11 +24,15 @@ public class FibonacciCrypter {
 
 	private static final String EMPTY = "";
 	private static final String SPACE = " ";
+	private static final String UNDERSCORE = "_";
+	private static final String PIPE = "|";
+
 	private static final String SPLIT_REGEX = "(?!^)";
 
 	private static final int ALPHABET_SIZE = 26;
 
 	private static final int START = 1;
+
 	private final int END = 60;
 
 	private final NavigableMap<Integer, String> positionToCharMap = new TreeMap<>();
@@ -55,18 +60,18 @@ public class FibonacciCrypter {
 			String _char = getChar(i);
 
 			int offset = 0;
-			String uppercaseChar = _char.toUpperCase();
-			positionToCharMap.put(offset + i, uppercaseChar);
-			charToPositionMap.put(uppercaseChar, offset + i);
-
-			offset = ALPHABET_SIZE;
 			String lowercaseChar = _char.toLowerCase();
 			positionToCharMap.put(offset + i, lowercaseChar);
 			charToPositionMap.put(lowercaseChar, offset + i);
+
+			offset = ALPHABET_SIZE;
+			String uppercaseChar = _char.toUpperCase();
+			positionToCharMap.put(offset + i, uppercaseChar);
+			charToPositionMap.put(uppercaseChar, offset + i);
 		}
 		// SPACE
-		charToPositionMap.put(SPACE, 0);
-		positionToCharMap.put(0, SPACE);
+//		charToPositionMap.put(SPACE, 0);
+//		positionToCharMap.put(0, SPACE);
 
 		AtomicInteger offset = new AtomicInteger(charToPositionMap.size());
 		List.of(".", ",", ";", "!").stream().forEach(c -> {
@@ -107,26 +112,63 @@ public class FibonacciCrypter {
 				Integer ctp = charToPositionMap.get(c);
 //				System.out.println("c:" + uppercaseChar + " n:" + Long);
 				if (ctp == null) {
-					System.err.println(c + " null!");
+//					System.err.println(c + " null!");
+					return c;
 				}
 				Long byFibonacci = fibonacciSeries.get(ctp);
 //				System.out.println("\t bf:" + byFibonacci);
 				return EMPTY + byFibonacci;
 			})
-			.collect(Collectors.joining(SPACE));
+			.collect(Collectors.joining(UNDERSCORE))
+			.replace(UNDERSCORE + SPACE + UNDERSCORE, SPACE);
 	}
 
 	public String decrypt(String input) {
+		if (input == null || input.isEmpty()) {
+			return EMPTY;
+		}
 //		String _input = input.replaceAll(" 0 ", SPACE);
+		AtomicReference<String> toReturn = new AtomicReference<>(input.replace(SPACE, PIPE));
 //		System.out.println("_input:" + input);
-		return Arrays.stream(input.split(SPACE))
-			.map(c -> {
-				int position = fibonacciSeries.indexOf(Long.parseLong(c));
+		Arrays.stream(input.split(SPACE))
+			.flatMap(w -> Arrays.stream(w.split(UNDERSCORE)))
+			.map(numberAsString -> {
+				int position = fibonacciSeries.indexOf(Long.parseLong(numberAsString));
 //				System.out.println(c);
-				String string = positionToCharMap.get(position);
-				return string;
+				String _char = positionToCharMap.get(position);
+				return new String[] { numberAsString, _char };
 			})
-			.collect(Collectors.joining(EMPTY));
+			.forEach(sa -> {
+				String n = sa[0];
+				String c = sa[1];
+				toReturn.updateAndGet(t -> t
+					.replace(UNDERSCORE + n + UNDERSCORE, UNDERSCORE + c + UNDERSCORE)
+					.replace(UNDERSCORE + n + PIPE, UNDERSCORE + c + PIPE)
+					.replace(PIPE + n + UNDERSCORE, PIPE + c + UNDERSCORE)
+//					.replace(n + UNDERSCORE, c + UNDERSCORE)
+//					.replace(UNDERSCORE + n, UNDERSCORE + c)
+				);
+			});
+//			.collect(Collectors.joining(EMPTY));
+
+		// handle first
+		toReturn.updateAndGet(t -> {
+			String first = toReturn.get().split(UNDERSCORE)[0];
+			String s = positionToCharMap.get(fibonacciSeries.indexOf(Long.parseLong(first)));
+			return t.replace(first, s);
+		});
+
+		// handle last
+		toReturn.updateAndGet(t -> {
+			String[] split = input.split(SPACE);
+			String last = split[split.length - 1];
+			String s = positionToCharMap.get(fibonacciSeries.indexOf(Long.parseLong(last)));
+			return t.replace(last, s);
+		});
+
+		return toReturn.get()
+			.replace(UNDERSCORE, EMPTY)
+			.replace(PIPE, SPACE);
 	}
 
 	/*-
