@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -22,10 +21,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class FibonacciCrypter {
 
+	/**
+	 *
+	 */
+	private static final String SKIP = "SKIP";
 	private static final String EMPTY = "";
 	private static final String SPACE = " ";
 	private static final String UNDERSCORE = "_";
 	private static final String PIPE = "|";
+	private static final String DOT = ".";
+	private static final String COMMA = ",";
+	private static final String SEMICOLON = ";";
+	private static final String MARK_EXCLAMATION = "!";
+	private static final String MARK_QUOTE = "?";
 
 	private static final String SPLIT_REGEX = "(?!^)";
 
@@ -44,15 +52,6 @@ public class FibonacciCrypter {
 	private void init() {
 		populateAlphabetMaps();
 		generateFibonacci(END);
-
-//		System.out.println("fibonacciSeries:");
-//		fibonacciSeries.forEach(i -> System.out.println(i));
-//		System.out.println("numberToCharMap:");
-//		positionToCharMap.entrySet().forEach((e) -> System.out.println(e.getKey() + ":" + e.getValue()));
-//		System.out.println("charToNumberMap:");
-//		charToPositionMap.entrySet().forEach((e) -> System.out.println(e.getKey() + ":" + e.getValue()));
-//		System.out.println("");
-
 	}
 
 	private void populateAlphabetMaps() {
@@ -73,6 +72,7 @@ public class FibonacciCrypter {
 //		charToPositionMap.put(SPACE, 0);
 //		positionToCharMap.put(0, SPACE);
 
+		/*-
 		AtomicInteger offset = new AtomicInteger(charToPositionMap.size());
 		List.of(".", ",", ";", "!").stream().forEach(c -> {
 			int incrementedPosition = offset.incrementAndGet();
@@ -80,6 +80,7 @@ public class FibonacciCrypter {
 			positionToCharMap.put(incrementedPosition, c);
 			charToPositionMap.put(c, position);
 		});
+		*/
 	}
 
 	private void generateFibonacci(int limit) {
@@ -108,33 +109,40 @@ public class FibonacciCrypter {
 	public String crypt(String input) {
 		return Arrays.stream(input.split(SPLIT_REGEX))
 			.map(c -> {
-//				String uppercaseChar = c.toUpperCase();
 				Integer ctp = charToPositionMap.get(c);
-//				System.out.println("c:" + uppercaseChar + " n:" + Long);
 				if (ctp == null) {
-//					System.err.println(c + " null!");
 					return c;
 				}
 				Long byFibonacci = fibonacciSeries.get(ctp);
-//				System.out.println("\t bf:" + byFibonacci);
 				return EMPTY + byFibonacci;
 			})
 			.collect(Collectors.joining(UNDERSCORE))
-			.replace(UNDERSCORE + SPACE + UNDERSCORE, SPACE);
+			.replace(UNDERSCORE + SPACE + UNDERSCORE, SPACE)
+			.replace(SEMICOLON + UNDERSCORE, SEMICOLON)
+			.replace(UNDERSCORE + COMMA, COMMA)
+			.replace(UNDERSCORE + DOT, DOT);
+
 	}
 
 	public String decrypt(String input) {
 		if (input == null || input.isEmpty()) {
 			return EMPTY;
 		}
-//		String _input = input.replaceAll(" 0 ", SPACE);
 		AtomicReference<String> toReturn = new AtomicReference<>(input.replace(SPACE, PIPE));
-//		System.out.println("_input:" + input);
-		Arrays.stream(input.split(SPACE))
+
+		AtomicReference<String> _input = new AtomicReference<>(input);
+		List.of(DOT, COMMA, SEMICOLON, MARK_EXCLAMATION)
+			.stream()
+			.forEach(p -> _input.updateAndGet(t -> t.replace(p, EMPTY)));
+		System.out.println("_input: " + _input);
+
+		Arrays.stream(_input.get().split(SPACE))
 			.flatMap(w -> Arrays.stream(w.split(UNDERSCORE)))
 			.map(numberAsString -> {
+				if (numberAsString.isEmpty()) {
+					return new String[] { SKIP, EMPTY };
+				}
 				int position = fibonacciSeries.indexOf(Long.parseLong(numberAsString));
-//				System.out.println(c);
 				String _char = positionToCharMap.get(position);
 				return new String[] { numberAsString, _char };
 			})
@@ -144,12 +152,18 @@ public class FibonacciCrypter {
 				toReturn.updateAndGet(t -> t
 					.replace(UNDERSCORE + n + UNDERSCORE, UNDERSCORE + c + UNDERSCORE)
 					.replace(UNDERSCORE + n + PIPE, UNDERSCORE + c + PIPE)
+					.replace(UNDERSCORE + n + SPACE, UNDERSCORE + c + SPACE)
 					.replace(PIPE + n + UNDERSCORE, PIPE + c + UNDERSCORE)
 //					.replace(n + UNDERSCORE, c + UNDERSCORE)
 //					.replace(UNDERSCORE + n, UNDERSCORE + c)
 				);
+
+				List.of(DOT, COMMA, SEMICOLON, MARK_EXCLAMATION).stream()
+					.forEach(p -> toReturn
+						.updateAndGet(t -> t
+							.replace(n + p, c + p)
+							.replace(p + n + PIPE, p + c + PIPE)));
 			});
-//			.collect(Collectors.joining(EMPTY));
 
 		// handle first
 		toReturn.updateAndGet(t -> {
@@ -159,25 +173,18 @@ public class FibonacciCrypter {
 		});
 
 		// handle last
+		/*-
 		toReturn.updateAndGet(t -> {
 			String[] split = input.split(SPACE);
 			String last = split[split.length - 1];
 			String s = positionToCharMap.get(fibonacciSeries.indexOf(Long.parseLong(last)));
 			return t.replace(last, s);
 		});
+		*/
 
 		return toReturn.get()
 			.replace(UNDERSCORE, EMPTY)
 			.replace(PIPE, SPACE);
 	}
-
-	/*-
-	public void sampleToString() {
-		for (int i = START; i <= END; i++) {
-			String _char = positionToCharMap.get(i);
-			Integer pos = charToPositionMap.get(_char);
-		}
-	}
-	*/
 
 }
