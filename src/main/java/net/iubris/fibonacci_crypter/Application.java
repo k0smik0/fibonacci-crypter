@@ -1,7 +1,10 @@
 package net.iubris.fibonacci_crypter;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
 /**
  * @author massimiliano.leone@capgemini.com
@@ -16,12 +19,11 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-//	@Autowired
-//	private FibonacciCrypter fibonacciCrypter;
+	@Autowired
+	private FibonacciCrypter fibonacciCrypter;
 
-	/*-
 	@Bean
-	CommandLineRunner doAtBoot() {
+	CommandLineRunner doSampleAtBoot() {
 		return i -> {
 			String originalMessage = "Buon CompleNano, caotico... ma non troppo ;D !";
 			String crypted = fibonacciCrypter.crypt(originalMessage);
@@ -32,5 +34,4 @@ public class Application {
 			System.out.println("decrypted: " + decrypt);
 		};
 	}
-	*/
 }

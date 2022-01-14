@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @ShellComponent
 public class FibonacciCrypterShell {
 
-//	@Lazy
+	// @Lazy
 	@Autowired
 	private FibonacciCrypter fibonacciCrypter;
 
@@ -34,18 +34,17 @@ public class FibonacciCrypterShell {
 	@Component
 	public static class CustomPromptProvider implements PromptProvider {
 
-//		private ConnectionDetails connection;
+		// private ConnectionDetails connection;
 
 		@Override
 		public AttributedString getPrompt() {
-			return new AttributedString("fibonacciCrypter :> ",
-					AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW));
+			return new AttributedString("fibonacciCrypter :> ", AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW));
 		}
 
-//		@EventListener
-//		public void handle(ConnectionUpdatedEvent event) {
-//			this.connection = event.getConnectionDetails();
-//		}
+		// @EventListener
+		// public void handle(ConnectionUpdatedEvent event) {
+		// this.connection = event.getConnectionDetails();
+		// }
 	}
 
 }

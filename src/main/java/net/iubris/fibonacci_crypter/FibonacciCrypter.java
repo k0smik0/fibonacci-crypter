@@ -21,9 +21,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class FibonacciCrypter {
 
-	/**
-	 *
-	 */
 	private static final String SKIP = "SKIP";
 	private static final String EMPTY = "";
 	private static final String SPACE = " ";
@@ -33,7 +30,7 @@ public class FibonacciCrypter {
 	private static final String COMMA = ",";
 	private static final String SEMICOLON = ";";
 	private static final String MARK_EXCLAMATION = "!";
-	private static final String MARK_QUOTE = "?";
+//	private static final String MARK_QUOTE = "?";
 
 	private static final String SPLIT_REGEX = "(?!^)";
 
